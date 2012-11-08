@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
+import serial
+import threading
+import time
 class SerialReceiver(threading.Thread):
     """ This class has been written by
         Philipp Klaus and can be found on
         https://gist.github.com/4039175 .  """
     def __init__(self, device, *args):
-        import serial
-        import threading
-        import time
         self._target = self.read
         self._args = args
         self.__lock = threading.Lock()
