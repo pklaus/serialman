@@ -2,17 +2,20 @@
 
 import serial
 import threading
+import time
 
 class SerialReceiver(threading.Thread):
     def __init__(self, device, *args):
         self._target = self.read
         self._args = args
+        self.__lock = threading.Lock()
 
         self.ser = serial.Serial(device)  # open first serial port
         print self.ser.portstr       # check which port was really used
         self.data_buffer = ""
 
         self.closing = False
+        self.sleeptime = 0.00005
 
         threading.Thread.__init__(self)
 
@@ -21,12 +24,22 @@ class SerialReceiver(threading.Thread):
 
     def read(self):
         while not self.closing:
-            self.data_buffer += self.ser.read(6)
+            time.sleep(self.sleeptime)
+            if not self.__lock.acquire(False):
+                continue
+            try:
+                self.data_buffer += self.ser.read(6)
+            finally:
+                self.__lock.release()
         self.ser.close()
 
     def pop_buffer(self):
+        # If a request is pending, we don't access the buffer
+        if not self.__lock.acquire(False):
+            return ""
         buf = self.data_buffer
         self.data_buffer = ""
+        self.__lock.release()
         return buf
 
     def write(data):
