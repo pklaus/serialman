@@ -3,7 +3,6 @@
 import serial
 import threading
 import time
-import argparse
 from multiprocessing import Process, Queue
 try:
     from queue import Empty
@@ -48,7 +47,8 @@ class SerialManager(Process):
     def close(self):
         self.closing = True
 
-if __name__ == "__main__":
+def main():
+    import argparse
     parser = argparse.ArgumentParser(description='A class to manage reading and writing from and to a serial port.')
     parser.add_argument('--sleeptime', '-s', type=float, default=0.001, help='Seconds to sleep between polling (0.001s).')
     parser.add_argument('--baudrate', '-b', type=int, default=9600, help='Baudrate of serial port.')
@@ -68,4 +68,7 @@ if __name__ == "__main__":
     finally:
         s1.close()
     s1.join()
+
+if __name__ == "__main__":
+    main()
 
