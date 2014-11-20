@@ -50,11 +50,11 @@ class SerialManager(Process):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='A class to manage reading and writing from and to a serial port.')
-    parser.add_argument('--baud', type=int, default=9600, help='Baudrate of serial port.')
+    parser.add_argument('--baudrate', '-b', type=int, default=9600, help='Baudrate of serial port.')
     parser.add_argument('device', help='The serial port to use (COM4, /dev/ttyUSB1 or similar).')
     args = parser.parse_args()
 
-    s1 = SerialManager(args.device, baudrate=args.baud)
+    s1 = SerialManager(args.device, baudrate=args.baudrate)
     s1.start()
 
     try:
