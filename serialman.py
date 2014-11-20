@@ -3,7 +3,8 @@
 import serial
 import threading
 import time
-class SerialReceiver(threading.Thread):
+
+class SerialManager(threading.Thread):
     """ This class has been written by
         Philipp Klaus and can be found on
         https://gist.github.com/4039175 .  """
@@ -50,7 +51,7 @@ class SerialReceiver(threading.Thread):
 if __name__ == "__main__":
     device = '/dev/tty.usbserial'
 
-    s1 = SerialReceiver(device)
+    s1 = SerialManager(device)
     s1.start()
 
     try:
@@ -62,3 +63,4 @@ if __name__ == "__main__":
     finally:
         s1.close()
     s1.join()
+
