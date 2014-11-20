@@ -13,6 +13,7 @@ class SerialManager(Process):
     """ This class has been written by
         Philipp Klaus and can be found on
         https://gist.github.com/4039175 .  """
+
     def __init__(self, device, **kwargs):
         settings = dict()
         settings['baudrate'] = 9600
@@ -27,14 +28,23 @@ class SerialManager(Process):
         self.out_queue = Queue()
         self.closing = False # A flag to indicate thread shutdown
         self.sleeptime = 0.0005
+        self.chunker = None
         Process.__init__(self, target=self.loop)
+
+    def set_chunker(self, chunker):
+        self.chunker = chunker
+        self.in_queue = chunker.in_queue
 
     def loop(self):
         try:
             while not self.closing:
                 time.sleep(self.sleeptime)
                 in_data = self.ser.read(256)
-                if in_data: self.in_queue.put(in_data)
+                if in_data:
+                    if self.chunker:
+                        self.chunker.new_data(in_data)
+                    else:
+                        self.in_queue.put(in_data)
                 try:
                     out_buffer = self.out_queue.get_nowait()
                     self.ser.write(out_buffer)
