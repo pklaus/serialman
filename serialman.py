@@ -3,61 +3,60 @@
 import serial
 import threading
 import time
+import argparse
+try:
+    from queue import Queue, Empty
+except:
+    from Queue import Queue, Empty
 
 class SerialManager(threading.Thread):
     """ This class has been written by
         Philipp Klaus and can be found on
         https://gist.github.com/4039175 .  """
-    def __init__(self, device, *args):
-        self._target = self.read
-        self._args = args
-        self.__lock = threading.Lock()
-        self.ser = serial.Serial(device)
-        self.data_buffer = ""
+    def __init__(self, device, **kwargs):
+        settings = dict()
+        settings['baudrate'] = 9600
+        settings['bytesize'] = serial.EIGHTBITS
+        settings['parity'] = serial.PARITY_NONE
+        settings['stopbits'] = serial.STOPBITS_ONE
+        settings['timeout'] = 0
+        settings.update(kwargs)
+        self._kwargs = settings
+        self.ser = serial.Serial(device, **self._kwargs)
+        self.in_queue = Queue()
+        self.out_queue = Queue()
         self.closing = False # A flag to indicate thread shutdown
-        self.sleeptime = 0.00005
+        self.sleeptime = 0.0005
         threading.Thread.__init__(self)
 
     def run(self):
-        self._target(*self._args)
-
-    def read(self):
         while not self.closing:
             time.sleep(self.sleeptime)
-            if not self.__lock.acquire(False):
-                continue
+            in_data = self.ser.read(256)
+            if in_data: self.in_queue.put(in_data)
             try:
-                self.data_buffer += self.ser.read(6)
-            finally:
-                self.__lock.release()
+                out_buffer = self.out_queue.get_nowait()
+                self.ser.write(out_buffer)
+            except Empty:
+                pass
         self.ser.close()
-
-    def pop_buffer(self):
-        # If a request is pending, we don't access the buffer
-        if not self.__lock.acquire(False):
-            return ""
-        buf = self.data_buffer
-        self.data_buffer = ""
-        self.__lock.release()
-        return buf
-
-    def write(data):
-        self.ser.write(data)
 
     def close(self):
         self.closing = True
 
-
 if __name__ == "__main__":
-    device = '/dev/tty.usbserial'
+    parser = argparse.ArgumentParser(description='A class to manage reading and writing from and to a serial port.')
+    parser.add_argument('--baud', type=int, default=9600, help='Baudrate of serial port.')
+    parser.add_argument('device', help='The serial port to use (COM4, /dev/ttyUSB1 or similar).')
+    args = parser.parse_args()
 
-    s1 = SerialManager(device)
+    s1 = SerialManager(args.device, baudrate=args.baud)
     s1.start()
 
     try:
         while True:
-            data = s1.pop_buffer()
-            if data != "": print repr(data)
+            data = s1.in_queue.get()
+            print(repr(data))
     except KeyboardInterrupt:
         s1.close()
     finally:
