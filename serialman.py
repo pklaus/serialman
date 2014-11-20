@@ -4,12 +4,13 @@ import serial
 import threading
 import time
 import argparse
+from multiprocessing import Process, Queue
 try:
-    from queue import Queue, Empty
+    from queue import Empty
 except:
-    from Queue import Queue, Empty
+    from Queue import Empty
 
-class SerialManager(threading.Thread):
+class SerialManager(Process):
     """ This class has been written by
         Philipp Klaus and can be found on
         https://gist.github.com/4039175 .  """
@@ -27,18 +28,21 @@ class SerialManager(threading.Thread):
         self.out_queue = Queue()
         self.closing = False # A flag to indicate thread shutdown
         self.sleeptime = 0.0005
-        threading.Thread.__init__(self)
+        Process.__init__(self, target=self.loop)
 
-    def run(self):
-        while not self.closing:
-            time.sleep(self.sleeptime)
-            in_data = self.ser.read(256)
-            if in_data: self.in_queue.put(in_data)
-            try:
-                out_buffer = self.out_queue.get_nowait()
-                self.ser.write(out_buffer)
-            except Empty:
-                pass
+    def loop(self):
+        try:
+            while not self.closing:
+                time.sleep(self.sleeptime)
+                in_data = self.ser.read(256)
+                if in_data: self.in_queue.put(in_data)
+                try:
+                    out_buffer = self.out_queue.get_nowait()
+                    self.ser.write(out_buffer)
+                except Empty:
+                    pass
+        except (KeyboardInterrupt, SystemExit):
+            pass
         self.ser.close()
 
     def close(self):
