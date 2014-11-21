@@ -6,7 +6,7 @@ import time
 from multiprocessing import Process, Queue
 try:
     from queue import Empty
-except:
+except ImportError:
     from Queue import Empty
 
 class SerialManager(Process):
