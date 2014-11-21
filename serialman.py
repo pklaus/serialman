@@ -28,11 +28,11 @@ class SerialManager(Process):
         self.out_queue = Queue()
         self.closing = False # A flag to indicate thread shutdown
         self.sleeptime = 0.0005
-        self.chunker = None
+        self._chunker = None
         Process.__init__(self, target=self.loop)
 
     def set_chunker(self, chunker):
-        self.chunker = chunker
+        self._chunker = chunker
         self.in_queue = chunker.in_queue
 
     def loop(self):
@@ -41,8 +41,8 @@ class SerialManager(Process):
                 time.sleep(self.sleeptime)
                 in_data = self.ser.read(256)
                 if in_data:
-                    if self.chunker:
-                        self.chunker.new_data(in_data)
+                    if self._chunker:
+                        self._chunker.new_data(in_data)
                     else:
                         self.in_queue.put(in_data)
                 try:
