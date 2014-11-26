@@ -27,6 +27,7 @@ class SerialManager(Process):
         self.in_queue = Queue()
         self.out_queue = Queue()
         self.closing = False # A flag to indicate thread shutdown
+        self.read_num_bytes  = 256
         self.sleeptime = None
         self._chunker = None
         Process.__init__(self, target=self.loop)
@@ -39,7 +40,7 @@ class SerialManager(Process):
         try:
             while not self.closing:
                 if self.sleeptime: time.sleep(self.sleeptime)
-                in_data = self.ser.read(256)
+                in_data = self.ser.read(self.read_num_bytes)
                 if in_data:
                     if self._chunker:
                         self._chunker.new_data(in_data)
@@ -68,6 +69,7 @@ def main():
 
     s1 = SerialManager(args.device, baudrate=args.baudrate, timeout=args.timeout)
     s1.sleeptime = args.sleeptime
+    s1.read_num_size = 512
     s1.start()
 
     try:
