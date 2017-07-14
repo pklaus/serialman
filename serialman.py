@@ -12,7 +12,7 @@ except ImportError:
 class SerialManager(Process):
     """ This class has been written by
         Philipp Klaus and can be found on
-        https://gist.github.com/4039175 .  """
+        https://github.com/pklaus/serialman """
 
     def __init__(self, device, **kwargs):
         settings = dict()
