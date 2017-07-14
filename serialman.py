@@ -58,6 +58,36 @@ class SerialManager(Process):
     def close(self):
         self.closing = True
 
+class NewlineChunker(object):
+
+    delimiter = b'\n'
+
+    # We throw away the first n items as the buffer of a USB to Serial
+    # converter (like the FT232RL) might still contain old data when
+    # opening the serial port.
+    discard_first_n_items = 1
+
+    # We also throw away what seems to be the first message
+    # (It could be incomplete if we start listening while it's transmission was already startd.)
+    discard_first_n_messages = 1
+
+    def __init__(self):
+        self.in_queue = Queue() # Queue
+        self.buf = b"" # buffer holding the incoming data
+
+    def new_data(self, data):
+        if self.discard_first_n_items:
+            self.discard_first_n_items -= 1
+            return
+        self.buf += data
+        while self.delimiter in self.buf:
+            first_part, delim, second_part = self.buf.partition(self.delimiter)
+            self.buf = second_part
+            if self.discard_first_n_messages:
+                self.discard_first_n_messages -= 1
+                continue
+            self.in_queue.put(first_part+self.delimiter)
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='A class to manage reading and writing from and to a serial port.')
