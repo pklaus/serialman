@@ -15,7 +15,7 @@ except (ImportError, IOError, RuntimeError) as e:
     LDESC = ''
 
 setup(name='serialman',
-      version = '0.1',
+      version = '0.dev',
       description = 'serialman = PySerial Manager : A Python package facilitating the use of PySerial.',
       long_description = LDESC,
       author = 'Philipp Klaus',
