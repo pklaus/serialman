@@ -94,10 +94,12 @@ def main():
     parser.add_argument('--timeout', '-t', type=float, default=0.0005, help='Seconds until reading from serial port times out [default: 0.0005].')
     parser.add_argument('--sleeptime', '-s', type=float, default=None, help='Seconds to sleep before reading from serial port again [default: none].')
     parser.add_argument('--baudrate', '-b', type=int, default=9600, help='Baudrate of serial port [default: 9600].')
+    parser.add_argument('--newline-chunker', '-n', action='store_true', help='Enable the newline chunker splitting the incoming data into messages ending with newline.')
     parser.add_argument('device', help='The serial port to use (COM4, /dev/ttyUSB1 or similar).')
     args = parser.parse_args()
 
     s1 = SerialManager(args.device, baudrate=args.baudrate, timeout=args.timeout)
+    if args.newline_chunker: s1.set_chunker(NewlineChunker())
     s1.sleeptime = args.sleeptime
     s1.read_num_size = 512
     s1.start()
