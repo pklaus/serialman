@@ -24,11 +24,11 @@ setup(name='serialman',
       license = 'GPL',
       #packages = ['',],
       py_modules = ['serialman',],
-      #entry_points = {
-      #    'console_scripts': [
-      #        'serialman = serialman:main',
-      #    ],
-      #},
+      entry_points = {
+          'console_scripts': [
+              'serialman = serialman:main',
+          ],
+      },
       zip_safe = True,
       platforms = 'any',
       install_requires = [
